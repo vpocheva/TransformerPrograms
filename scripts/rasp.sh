@@ -8,6 +8,7 @@ N_HEADS_NUM=4
 N_CAT_MLPS=2
 N_NUM_MLPS=2
 SEED=0
+DATASET="hist"
 
 python src/run.py \
      --dataset "${DATASET}" \
@@ -29,8 +30,8 @@ python src/run.py \
      --n_layers "${N_LAYERS}" \
      --n_heads_cat "${N_HEADS_CAT}" \
      --n_heads_num "${N_HEADS_NUM}" \
-     --n_cat_mlps "${N_MLPS}" \
-     --n_num_mlps "${N_NUM_CAT_MLPS}" \
+     --n_cat_mlps "${N_CAT_MLPS}" \
+     --n_num_mlps "${N_NUM_MLPS}" \
      --attention_type "cat" \
      --rel_pos_bias "fixed" \
      --one_hot_embed \

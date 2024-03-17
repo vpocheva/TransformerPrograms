@@ -18,15 +18,15 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from src.models.transformers import Transformer
-from src.models.programs import (
+from models.transformers import Transformer
+from models.programs import (
     TransformerProgramModel,
     argmax,
     gumbel_hard,
     gumbel_soft,
     softmax,
 )
-from src.utils import code_utils, data_utils, logging, metric_utils
+from utils import code_utils, data_utils, logging, metric_utils
 
 logger = logging.get_logger(__name__)
 
@@ -97,7 +97,7 @@ def parse_args():
     parser.add_argument("--save", action="store_true")
     parser.add_argument("--save_code", action="store_true")
 
-    parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--device", type=str, default="cpu")
 
     args = parser.parse_args()
 
