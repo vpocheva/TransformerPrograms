@@ -1,14 +1,14 @@
 #!/bin/bash 
 
-VOCAB_SIZE=8
-MAX_LENGTH=8
+VOCAB_SIZE=16
+MAX_LENGTH=16
 N_LAYERS=3
-N_HEADS_CAT=4
-N_HEADS_NUM=4
+N_HEADS_CAT=8
+N_HEADS_NUM=8
 N_CAT_MLPS=2
 N_NUM_MLPS=2
 SEED=0
-DATASET="hist"
+DATASET="reverse"
 
 python src/run.py \
      --dataset "${DATASET}" \
