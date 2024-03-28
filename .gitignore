@@ -6,3 +6,8 @@ Gemfile.lock
 .jekyll-cache
 *~
 *__pycache__*
+wandb/
+output/*
+
+.DS_Store
+.idea/

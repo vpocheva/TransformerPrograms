@@ -1,22 +1,39 @@
-#!/bin/bash 
+#!/bin/bash
 
-VOCAB_SIZE=8
-MAX_LENGTH=16
-N_LAYERS=3
-N_HEADS_CAT=8
-N_HEADS_NUM=8
-N_CAT_MLPS=4
-N_NUM_MLPS=4
+V=${V:-8}
+N=${N:-8}
+L=${L:-3}
+H=${H:-4}
+M=${M:-2}
+
+VOCAB_SIZE=${V}
+MAX_LENGTH=${N}
+N_LAYERS=${L}
+N_HEADS_CAT=${H}
+N_HEADS_NUM=${H}
+N_CAT_MLPS=${M}
+N_NUM_MLPS=${M}
+DATASET_SIZE=${DATASET_SIZE:-20000}
+N_EPOCHS=${N_EPOCHS:-250}
 SEED=0
-DATASET="sort"
+
+DEVICE=${DEVICE:-"cuda"}
+
+OUTPUT_DIR="output/rasp/${DATASET}/vocab${VOCAB_SIZE}maxlen${MAX_LENGTH}/transformer_program/headsc${N_HEADS_CAT}headsn${N_HEADS_NUM}nlayers${N_LAYERS}cmlps${N_MLPS}nmlps${N_NUM_CAT_MLPS}/s${SEED}/${DATASET_SIZE}";
+
+# create dirs if they don't exist
+mkdir -p ${OUTPUT_DIR};
+touch ${OUTPUT_DIR}/params.json;
+# Echo the json that reflect the parameters used
+echo "{\"V\": ${V}, \"N\": ${N}, \"L\": ${L}, \"H\": ${H}, \"M\": ${M}, \"dataset_size\": ${DATASET_SIZE}, \"seed\": ${SEED}}" > ${OUTPUT_DIR}/params.json;
 
 python src/run.py \
      --dataset "${DATASET}" \
      --vocab_size "${VOCAB_SIZE}" \
-     --dataset_size 20000 \
+     --dataset_size ${DATASET_SIZE} \
      --min_length 1 \
      --max_length "${MAX_LENGTH}" \
-     --n_epochs 250 \
+     --n_epochs ${N_EPOCHS} \
      --batch_size 512 \
      --lr "5e-2" \
      --gumbel_samples 1 \
@@ -42,6 +59,7 @@ python src/run.py \
      --selector_width 0 \
      --seed "${SEED}" \
      --unique 1 \
+     --device "${DEVICE}" \
      --save \
      --save_code \
-     --output_dir "output/rasp/${DATASET}/vocab${VOCAB_SIZE}maxlen${MAX_LENGTH}/transformer_program/headsc${N_HEADS_CAT}headsn${N_HEADS_NUM}nlayers${N_LAYERS}cmlps${N_MLPS}nmlps${N_NUM_CAT_MLPS}/s${SEED}";
+     --output_dir ${OUTPUT_DIR};

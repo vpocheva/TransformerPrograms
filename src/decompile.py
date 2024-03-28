@@ -67,6 +67,7 @@ def load_model(path):
         Y_test,
         X_val,
         Y_val,
+        dataset_source,
     ) = data_utils.get_dataset(
         name=args.dataset,
         vocab_size=args.vocab_size,
