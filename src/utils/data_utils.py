@@ -112,6 +112,37 @@ def make_double_hist(
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 
+def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
+    vocab = np.array([str(i) for i in range(vocab_size - 2)])
+    sents, tags = [], []
+    np.random.seed(seed)
+    for _ in range(dataset_size):
+        l = np.random.randint(min_length, max_length)
+        sent = np.random.choice(vocab, size=l, replace=True)
+        sent_str = ''.join(sent)  # Convert sequence to string
+        rle_encoded = run_length_encode(sent_str)  # Encode the sequence using RLE
+        sents.append([BOS] + list(sent_str) + [PAD])
+        tags.append([BOS] + list(rle_encoded) + [PAD])
+    return pd.DataFrame({"sent": sents, "tags": tags})
+
+
+def run_length_encode(string):
+    encoded_string = ""
+    count = 1
+    # Start from the second character and iterate till the end
+    for i in range(1, len(string)):
+        # If current character is same as previous character, increase count
+        if string[i] == string[i - 1]:
+            count += 1
+        else:
+            # If current character is different, add previous character and count to the encoded string
+            encoded_string += string[i - 1] + str(count)
+            count = 1  # Reset count for the new character
+    # Add the last character and its count
+    encoded_string += string[-1] + str(count)
+    return encoded_string
+
+
 def make_sort(vocab_size, dataset_size, min_length=4, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 3)])
     sents, tags = [], []
@@ -607,6 +638,8 @@ def get_dataset(
         "dyck1": make_dyck_pft,
         "dyck2": make_dyck_pft,
         "sort": make_sort,
+
+        "encoding": make_encoding,
     }
     if name not in fns:
         raise NotImplementedError(name)
