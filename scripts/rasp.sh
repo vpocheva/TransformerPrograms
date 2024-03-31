@@ -1,14 +1,14 @@
 #!/bin/bash 
 
 VOCAB_SIZE=8
-MAX_LENGTH=8
+MAX_LENGTH=16
 N_LAYERS=3
 N_HEADS_CAT=8
 N_HEADS_NUM=8
 N_CAT_MLPS=4
 N_NUM_MLPS=4
 SEED=0
-DATASET="most_freq"
+DATASET="sort"
 
 python src/run.py \
      --dataset "${DATASET}" \
