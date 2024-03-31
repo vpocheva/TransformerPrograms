@@ -3,12 +3,12 @@
 VOCAB_SIZE=8
 MAX_LENGTH=8
 N_LAYERS=3
-N_HEADS_CAT=4
-N_HEADS_NUM=4
-N_CAT_MLPS=2
-N_NUM_MLPS=2
+N_HEADS_CAT=8
+N_HEADS_NUM=8
+N_CAT_MLPS=4
+N_NUM_MLPS=4
 SEED=0
-DATASET="double_hist"
+DATASET="most_freq"
 
 python src/run.py \
      --dataset "${DATASET}" \
