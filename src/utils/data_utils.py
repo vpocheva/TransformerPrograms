@@ -111,6 +111,32 @@ def make_double_hist(
         tags.append([PAD] + [str(double_counts[counts[c]]) for c in sent])
     return pd.DataFrame({"sent": sents, "tags": tags})
 
+
+def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
+    vocab = np.array([chr(i) for i in range(97, 97 + vocab_size - 2)])  # Create vocabulary from lowercase letters
+    sents, tags = [], []
+    np.random.seed(seed)
+    for _ in range(dataset_size):
+        l = np.random.randint(min_length, max_length)
+        sent = np.random.choice(vocab, size=l, replace=True).tolist()
+
+        encoded_sent = ""
+        current_char = sent[0]
+        count = 1
+        for i in range(1, len(sent)):
+            if sent[i] == current_char:
+                count += 1
+            else:
+                encoded_sent += current_char + str(count)
+                current_char = sent[i]
+                count = 1
+        encoded_sent += current_char + str(count)
+
+        sents.append([[BOS]] + sent)
+        tags.append([[PAD]] + [encoded_sent])  # Wrap encoded_sent in a list to ensure proper concatenation
+
+    return pd.DataFrame({"sent": sents, "tags": tags})
+
 """
 def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 2)])
@@ -141,7 +167,7 @@ def run_length_encode(string):
     # Add the last character and its count
     encoded_string += string[-1] + str(count)
     return encoded_string
-"""
+
 def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
     vocab = np.array([chr(i) for i in range(97, 97 + vocab_size)])  # Using lowercase alphabets as vocabulary
     sents, tags = [], []
@@ -151,8 +177,8 @@ def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0)
         sequence = np.random.choice(vocab, size=length, replace=True)
         sequence_str = ''.join(sequence)
         encoded_sequence = run_length_encode(sequence_str)
-        sents.append([BOS] + list(sequence_str) + [PAD])
-        tags.append([BOS] + list(encoded_sequence) +  [PAD])
+        sents.append([BOS] + list(sequence_str))
+        tags.append([PAD] + list(encoded_sequence))
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 def run_length_encode(string):
@@ -166,6 +192,7 @@ def run_length_encode(string):
             count = 1
     encoded_string += string[-1] + str(count)
     return encoded_string
+"""
 
 def make_sort(vocab_size, dataset_size, min_length=4, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 3)])
