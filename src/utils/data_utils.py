@@ -112,6 +112,19 @@ def make_double_hist(
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 
+def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0):
+    vocab = np.array([str(i) for i in range(vocab_size - 2)])
+    sents, tags = [], []
+    np.random.seed(seed)
+    for _ in range(dataset_size):
+        l = np.random.randint(min_length, max_length)
+        sent = np.random.choice(vocab, size=l, replace=True).tolist()
+        counts = Counter(sent)
+        sents.append([BOS] + sent)
+        tags.append([PAD] + [str(counts[c]) for c in sent])
+    return pd.DataFrame({"sent": sents, "tags": tags})
+
+"""
 def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
     vocab = np.array([chr(i) for i in range(97, 97 + vocab_size - 2)])  # Create vocabulary from lowercase letters
     sents, tags = [], []
@@ -136,7 +149,7 @@ def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0)
         tags.append([PAD] + [encoded_sent])  # Wrap encoded_sent in a list to ensure proper concatenation
 
     return pd.DataFrame({"sent": sents, "tags": tags})
-
+"""
 """
 def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 2)])
