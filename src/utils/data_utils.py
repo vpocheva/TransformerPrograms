@@ -116,6 +116,41 @@ def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0)
     vocab = np.array([str(i) for i in range(vocab_size - 2)])
     sents, tags = [], []
     np.random.seed(seed)
+    max_sent_length = max_length + 2  # Accounting for BOS and EOS tokens
+    for _ in range(dataset_size):
+        l = np.random.randint(min_length, max_length)
+        sent = np.random.choice(vocab, size=l, replace=True).tolist()
+        compressed_sent = compress_string(sent)
+        padded_tags = pad_tags(compressed_sent, max_sent_length)
+        sents.append([BOS] + sent + [EOS])  # Adding BOS and EOS tokens
+        tags.append([PAD] + padded_tags + [PAD] * (max_sent_length - len(padded_tags)))
+    return pd.DataFrame({"sent": sents, "tags": tags})
+
+def compress_string(string):
+    compressed = []
+    count = 1
+    for i in range(1, len(string)):
+        if string[i] == string[i - 1]:
+            count += 1
+        else:
+            compressed.append(string[i - 1] + str(count))
+            count = 1
+    compressed.append(string[-1] + str(count))
+    return compressed
+
+def pad_tags(tags, max_length):
+    if len(tags) >= max_length:
+        return tags[:max_length]  # Truncate if longer than max_length
+    else:
+        return tags + [PAD] * (max_length - len(tags))  # Pad if shorter than max_length
+
+
+
+'''
+def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0):
+    vocab = np.array([str(i) for i in range(vocab_size - 2)])
+    sents, tags = [], []
+    np.random.seed(seed)
     for _ in range(dataset_size):
         l = np.random.randint(min_length, max_length)
         sent = np.random.choice(vocab, size=l, replace=True).tolist()
@@ -135,7 +170,7 @@ def compress_string(string):
             count = 1
     compressed.append(string[-1] + str(count))
     return compressed
-
+'''
 
 """
 def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
