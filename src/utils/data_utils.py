@@ -132,8 +132,8 @@ def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0)
                 count = 1
         encoded_sent += current_char + str(count)
 
-        sents.append([[BOS]] + sent)
-        tags.append([[PAD]] + [encoded_sent])  # Wrap encoded_sent in a list to ensure proper concatenation
+        sents.append([BOS] + sent)
+        tags.append([PAD] + [encoded_sent])  # Wrap encoded_sent in a list to ensure proper concatenation
 
     return pd.DataFrame({"sent": sents, "tags": tags})
 
