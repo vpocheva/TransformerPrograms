@@ -116,14 +116,12 @@ def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0)
     vocab = np.array([str(i) for i in range(vocab_size - 2)])
     sents, tags = [], []
     np.random.seed(seed)
-    max_sent_length = max_length + 2  # Accounting for BOS and EOS tokens
     for _ in range(dataset_size):
         l = np.random.randint(min_length, max_length)
         sent = np.random.choice(vocab, size=l, replace=True).tolist()
         compressed_sent = compress_string(sent)
-        padded_tags = pad_tags(compressed_sent, max_sent_length)
-        sents.append([BOS] + sent + [EOS])  # Adding BOS and EOS tokens
-        tags.append([PAD] + padded_tags + [PAD] * (max_sent_length - len(padded_tags)))
+        sents.append([BOS] + sent)
+        tags.append([PAD] + compressed_sent + [BOS] * (len(sents[-1]) - len(compressed_sent))-1)
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 def compress_string(string):
@@ -138,122 +136,9 @@ def compress_string(string):
     compressed.append(string[-1] + str(count))
     return compressed
 
-def pad_tags(tags, max_length):
-    if len(tags) >= max_length:
-        return tags[:max_length]  # Truncate if longer than max_length
-    else:
-        return tags + [PAD] * (max_length - len(tags))  # Pad if shorter than max_length
 
 
 
-'''
-def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0):
-    vocab = np.array([str(i) for i in range(vocab_size - 2)])
-    sents, tags = [], []
-    np.random.seed(seed)
-    for _ in range(dataset_size):
-        l = np.random.randint(min_length, max_length)
-        sent = np.random.choice(vocab, size=l, replace=True).tolist()
-        compressed_sent = compress_string(sent)
-        sents.append([BOS] + sent)
-        tags.append([PAD] + compressed_sent + [BOS] * (len(sents[-1]) - len(compressed_sent)))
-    return pd.DataFrame({"sent": sents, "tags": tags})
-
-def compress_string(string):
-    compressed = []
-    count = 1
-    for i in range(1, len(string)):
-        if string[i] == string[i - 1]:
-            count += 1
-        else:
-            compressed.append(string[i - 1] + str(count))
-            count = 1
-    compressed.append(string[-1] + str(count))
-    return compressed
-'''
-
-"""
-def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
-    vocab = np.array([chr(i) for i in range(97, 97 + vocab_size - 2)])  # Create vocabulary from lowercase letters
-    sents, tags = [], []
-    np.random.seed(seed)
-    for _ in range(dataset_size):
-        l = np.random.randint(min_length, max_length)
-        sent = np.random.choice(vocab, size=l, replace=True).tolist()
-
-        encoded_sent = ""
-        current_char = sent[0]
-        count = 1
-        for i in range(1, len(sent)):
-            if sent[i] == current_char:
-                count += 1
-            else:
-                encoded_sent += current_char + str(count)
-                current_char = sent[i]
-                count = 1
-        encoded_sent += current_char + str(count)
-
-        sents.append([BOS] + sent)
-        tags.append([PAD] + [encoded_sent])  # Wrap encoded_sent in a list to ensure proper concatenation
-
-    return pd.DataFrame({"sent": sents, "tags": tags})
-"""
-"""
-def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
-    vocab = np.array([str(i) for i in range(vocab_size - 2)])
-    sents, tags = [], []
-    np.random.seed(seed)
-    for _ in range(dataset_size):
-        l = np.random.randint(min_length, max_length)
-        sent = np.random.choice(vocab, size=l, replace=True)
-        sent_str = ''.join(sent)  # Convert sequence to string
-        rle_encoded = run_length_encode(sent_str)  # Encode the sequence using RLE
-        sents.append([BOS] + list(sent_str) + [PAD])
-        tags.append([BOS] + list(rle_encoded) + [PAD])
-    return pd.DataFrame({"sent": sents, "tags": tags})
-
-
-def run_length_encode(string):
-    encoded_string = ""
-    count = 1
-    # Start from the second character and iterate till the end
-    for i in range(1, len(string)):
-        # If current character is same as previous character, increase count
-        if string[i] == string[i - 1]:
-            count += 1
-        else:
-            # If current character is different, add previous character and count to the encoded string
-            encoded_string += string[i - 1] + str(count)
-            count = 1  # Reset count for the new character
-    # Add the last character and its count
-    encoded_string += string[-1] + str(count)
-    return encoded_string
-
-def make_encoding(vocab_size, dataset_size, min_length=1, max_length=16, seed=0):
-    vocab = np.array([chr(i) for i in range(97, 97 + vocab_size)])  # Using lowercase alphabets as vocabulary
-    sents, tags = [], []
-    np.random.seed(seed)
-    for _ in range(dataset_size):
-        length = np.random.randint(min_length, max_length)
-        sequence = np.random.choice(vocab, size=length, replace=True)
-        sequence_str = ''.join(sequence)
-        encoded_sequence = run_length_encode(sequence_str)
-        sents.append([BOS] + list(sequence_str))
-        tags.append([PAD] + list(encoded_sequence))
-    return pd.DataFrame({"sent": sents, "tags": tags})
-
-def run_length_encode(string):
-    encoded_string = ""
-    count = 1
-    for i in range(1, len(string)):
-        if string[i] == string[i - 1]:
-            count += 1
-        else:
-            encoded_string += string[i - 1] + str(count)
-            count = 1
-    encoded_string += string[-1] + str(count)
-    return encoded_string
-"""
 
 def make_sort(vocab_size, dataset_size, min_length=4, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 3)])
