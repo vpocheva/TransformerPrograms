@@ -123,7 +123,8 @@ def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0)
         sent = np.random.choice(vocab, size=l, replace=True).tolist()
         sent = [BOS] + sent
         compressed_sent = compress_string(sent)
-        tag = [PAD] + compressed_sent + [PAD] * (len(sent) - len(tag))
+        tag = [PAD] + compressed_sent 
+        tag = tag + [PAD] * (len(sent) - len(tag))
         if len(tag) > len(sent):
             continue
         sents.append(sent)
