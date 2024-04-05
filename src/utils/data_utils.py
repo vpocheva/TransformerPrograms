@@ -123,16 +123,11 @@ def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0)
         sent = np.random.choice(vocab, size=l, replace=True).tolist()
         sent = [BOS] + sent
         compressed_sent = compress_string(sent)
-        target = [PAD] + compressed_sent
-        target = target + [PAD] * (len(sent) - len(target))
-
-
-        if len(target) > len(sent):
+        tag = [PAD] + compressed_sent + [PAD] * (len(sent) - len(tag))
+        if len(tag) > len(sent):
             continue
         sents.append(sent)
-        tags.append(target)
-        #sents.append([BOS] + sent)
-        #tags.append([PAD] + compressed_sent + [PAD] * (max_sent_length - len(padded_tags)))
+        tags.append(tag)
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 def compress_string(string):
