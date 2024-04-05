@@ -111,7 +111,30 @@ def make_double_hist(
         tags.append([PAD] + [str(double_counts[counts[c]]) for c in sent])
     return pd.DataFrame({"sent": sents, "tags": tags})
 
+def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0):
+    vocab = np.array([str(i) for i in range(vocab_size - 2)]) # -2 to account for BOS and PAD
+    sents, tags = [], []
+    np.random.seed(seed)
+    i = 0
+    while i < dataset_size:
+        l = np.random.randint(min_length, max_length)
+        sent = np.random.choice(vocab, size=l, replace=True).tolist()
+        sent = [BOS] + sent
 
+        target = [PAD] + list(itertools.chain(*[[k] + [str(len(list(g)))] for k, g in itertools.groupby(sent[1:])]))
+        target = target + [PAD] * (len(sent) - len(target))  # Pad the output size to match the input size
+
+        # Discard if output is longer than input
+        if len(target) > len(sent):
+            continue
+        sents.append(sent)
+        tags.append(target)
+        i += 1
+    return pd.DataFrame({"sent": sents, "tags": tags})
+
+
+
+"""
 def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 2)])
     sents, tags = [], []
@@ -119,9 +142,10 @@ def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0)
     for _ in range(dataset_size):
         l = np.random.randint(min_length, max_length)
         sent = np.random.choice(vocab, size=l, replace=True).tolist()
+        sent = [BOS] + sent
         compressed_sent = compress_string(sent)
         sents.append([BOS] + sent)
-        tags.append([PAD] + compressed_sent + [BOS])
+        tags.append([PAD] + compressed_sent + [PAD] * (max_sent_length - len(padded_tags)))
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 def compress_string(string):
@@ -135,7 +159,7 @@ def compress_string(string):
             count = 1
     compressed.append(string[-1] + str(count))
     return compressed
-
+"""
 
 
 
