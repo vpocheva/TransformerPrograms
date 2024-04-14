@@ -117,6 +117,41 @@ def make_double_hist(
     return pd.DataFrame({"sent": sents, "tags": tags})
 
 
+
+
+def make_encoding(vocab_size, dataset_size, min_length=2, max_length=16, seed=0):
+    vocab = np.array([str(i) for i in range(vocab_size - 2)])
+    sents, tags = [], []
+    np.random.seed(seed)
+    for _ in range(dataset_size):
+        l = np.random.randint(min_length, max_length)
+        sent = np.random.choice(vocab, size=l, replace=True).tolist()
+        sent = [BOS] + sent
+        compressed_sent = compress_string(sent)
+        tag = [PAD] + compressed_sent 
+        tag = tag + [PAD] * (len(sent) - len(tag))
+        if len(tag) > len(sent):
+            continue
+        sents.append(sent)
+        tags.append(tag)
+    return pd.DataFrame({"sent": sents, "tags": tags})
+
+def compress_string(string):
+    compressed = []
+    count = 1
+    for i in range(1, len(string)):
+        if string[i] == string[i - 1]:
+            count += 1
+        else:
+            compressed.append(string[i - 1] + str(count))
+            count = 1
+    compressed.append(string[-1] + str(count))
+    return compressed
+
+
+
+
+
 def make_sort(vocab_size, dataset_size, min_length=4, max_length=16, seed=0):
     vocab = np.array([str(i) for i in range(vocab_size - 3)])
     sents, tags = [], []
