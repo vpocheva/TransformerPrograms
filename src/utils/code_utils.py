@@ -726,6 +726,8 @@ def model_to_code(
     model,
     idx_w,
     idx_t,
+    dataset_source=None,
+    auto_accuracy_size=None,
     embed_csv=False,
     embed_enums=False,
     unembed_csv=True,
@@ -741,6 +743,9 @@ def model_to_code(
     compress=True,
     unembed_mask=True,
 ):
+    if auto_accuracy_size is None:
+        auto_accuracy_size = 1000
+
     if var_types == True:
         var_types = get_var_types(
             model, idx_w, one_hot=one_hot, enums=embed_enums
@@ -927,7 +932,65 @@ def model_to_code(
         ]
     s = "\n".join(header + ["\t" + s for s in lines])
 
-    if example:
+    if dataset_source:
+        code = dataset_source["code"]
+        s += f"\n\n{code}\n"
+
+        # def replace_s_with_pad(row):
+        #     row = [s.replace(BOS, PAD) for s in row]
+        #     row = [s.replace(EOS, PAD) for s in row]
+        #     return row
+        #
+        # def test_for_accuracy():
+        #     vocab_size = 8
+        #     dataset_size = 10
+        #     min_length = 1
+        #     max_length = 8
+        #     define_constants()
+        #
+        #     df = make_sort(vocab_size, dataset_size, min_length, max_length)
+        #     df["predicted"] = df["sent"].apply(run)
+        #     df["predicted"] = df["predicted"].apply(replace_s_with_pad)
+        #
+        #     df["correct"] = df["predicted"] == df["tags"]
+        #     accuracy = df["correct"].mean()
+        #     return accuracy
+        #
+        # if __name__ == "__main__":
+        #     print(test_for_accuracy())
+        vocab_size = dataset_source["vocab_size"]
+        min_length = dataset_source["min_length"]
+        max_length = dataset_source["max_length"]
+
+        test_accuracy_code = [
+            "def replace_s_with_pad(row):",
+            "\trow = [s.replace(BOS, PAD) for s in row]",
+            "\trow = [s.replace(EOS, PAD) for s in row]",
+            "\treturn row",
+            "",
+            "def test_for_accuracy():",
+            f"\tvocab_size = {vocab_size}",
+            f"    dataset_size = {auto_accuracy_size}",
+            f"    min_length = {min_length}",
+            f"    max_length = {max_length}",
+            "    define_constants()",
+            "",
+            "    df = make_sort(vocab_size, dataset_size, min_length, max_length)",
+            "    df['predicted'] = df['sent'].apply(run)",
+            "    df['predicted'] = df['predicted'].apply(replace_s_with_pad)",
+            "",
+            "    df['correct'] = df['predicted'] == df['tags']",
+            "    accuracy = df['correct'].mean()",
+            "    return accuracy",
+            "",
+            "if __name__ == '__main__':",
+            "    print(test_for_accuracy())",
+        ]
+
+        s += "\n\n" + "\n".join(test_accuracy_code)
+
+
+    elif example:
         s += f"\nprint(run({example}))"
 
     if examples:
@@ -952,9 +1015,12 @@ def model_to_code(
         m = format_str(m, mode=FileMode())
 
     fn = Path(output_dir) / f"{name}.py"
+    init_file_path = Path(output_dir) / "__init__.py"
     length = m.count("\n")
     if save:
         print(f"writing {length} lines to {fn}")
         with open(fn, "w") as f:
             f.write(m)
+        with open(init_file_path, "w") as f:
+            f.write("")
     return m

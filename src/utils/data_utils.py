@@ -22,15 +22,20 @@ from torch.nn import functional as F
 
 from utils import logging
 
+import inspect
+
 logger = logging.get_logger(__name__)
 
 
-BOS = "<s>"
-EOS = "</s>"
-SEP = "<sep>"
-PAD = "<pad>"
-UNK = "<unk>"
+def define_constants():
+    global BOS, EOS, SEP, PAD, UNK
+    BOS = "<s>"
+    EOS = "</s>"
+    SEP = "<sep>"
+    PAD = "<pad>"
+    UNK = "<unk>"
 
+define_constants()
 
 def make_induction(
     vocab_size, dataset_size, min_length=4, max_length=16, seed=0, unique=True
@@ -256,6 +261,7 @@ def prepare_dataset(
     sent_key="sent",
     tag_key="tags",
     max_len=None,
+    dataset_source=None
 ):
     idx_w, w_idx, idx_t, t_idx = get_tokenizer(
         train, vocab_size=vocab_size, unk=unk
@@ -279,6 +285,7 @@ def prepare_dataset(
         Y_test,
         X_val,
         Y_val,
+        dataset_source,
     )
 
 
@@ -608,6 +615,16 @@ def get_dataset(
         "dyck2": make_dyck_pft,
         "sort": make_sort,
     }
+    fn_source = inspect.getsource(fns[name])
+    constants_source = inspect.getsource(define_constants)
+    dataset_source_code = constants_source + "\n" + fn_source
+    dataset_source = {
+        "code": dataset_source_code,
+        "vocab_size": vocab_size,
+        "min_length": min_length,
+        "max_length": max_length,
+    }
+
     if name not in fns:
         raise NotImplementedError(name)
     if unique:
@@ -636,8 +653,8 @@ def get_dataset(
         train, val = train_test_split(
             train, test_size=test_size, random_state=seed
         )
-        return train, test, val, *prepare_dataset(train, test, val=val, unk=unk)
-    return train, test, *prepare_dataset(train, test, unk=unk)
+        return train, test, val, *prepare_dataset(train, test, val=val, unk=unk, dataset_source=dataset_source)
+    return train, test, *prepare_dataset(train, test, unk=unk, dataset_source=dataset_source)
 
 
 class LocalGlove:

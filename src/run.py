@@ -28,6 +28,8 @@ from models.programs import (
 )
 from utils import code_utils, data_utils, logging, metric_utils
 
+import wandb
+
 logger = logging.get_logger(__name__)
 
 
@@ -99,6 +101,8 @@ def parse_args():
 
     parser.add_argument("--device", type=str, default="cpu")
 
+    parser.add_argument("--wandb", default=False, action="store_true")
+
     args = parser.parse_args()
 
     if "dyck1" in args.dataset:
@@ -115,6 +119,10 @@ def parse_args():
         logger.info(
             f"setting d_head to {args.d_model} // {args.n_heads} = {args.d_head}"
         )
+
+    # setup wandb
+    if args.wandb:
+        wandb.init(project="transformer-programs", config={**vars(args)})
 
     return args
 
@@ -245,6 +253,12 @@ def run_training(
                 o_idx=o_idx,
                 idx_t=idx_t,
             )
+
+            if args.wandb:
+                loss = d["loss"]
+                acc = d["acc"]
+                wandb.log({"loss": loss, "acc": acc, "metrics": metrics})
+
             d.update(m)
             metrics.append(d)
             for split, X, Y in eval_splits:
@@ -351,6 +365,7 @@ def run_program(
     args,
     train=None,
     test=None,
+    dataset_source=None,
     idx_w=None,
     w_idx=None,
     idx_t=None,
@@ -478,6 +493,7 @@ def run_program(
                 model=model,
                 idx_w=idx_w,
                 idx_t=idx_t,
+                auto_accuracy_size=len(X_test),
                 embed_csv=not args.one_hot_embed,
                 unembed_csv=True,
                 one_hot=args.one_hot_embed,
@@ -486,6 +502,7 @@ def run_program(
                 output_dir=args.output_dir,
                 name=args.dataset,
                 example=x,
+                dataset_source=dataset_source,
             )
         except Exception as e:
             logger.error(f"error saving code: {e}")
@@ -497,6 +514,7 @@ def run_standard(
     args,
     train=None,
     test=None,
+    dataset_source=None,
     idx_w=None,
     w_idx=None,
     idx_t=None,
@@ -608,6 +626,7 @@ def run(args):
         Y_test,
         X_val,
         Y_val,
+        dataset_source,
     ) = data_utils.get_dataset(
         name=args.dataset,
         vocab_size=args.vocab_size,
@@ -634,6 +653,7 @@ def run(args):
         args,
         train=train,
         test=test,
+        dataset_source=dataset_source,
         idx_w=idx_w,
         w_idx=w_idx,
         idx_t=idx_t,
